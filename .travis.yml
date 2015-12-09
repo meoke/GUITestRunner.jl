@@ -10,6 +10,8 @@ notifications:
   email: 
   - paulinahyzy@gmail.com
 # uncomment the following lines to override the default test script
-#script:
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia -e 'Pkg.clone(pwd()); Pkg.build("TestRunner"); Pkg.test("TestRunner"; coverage=true)' 
+script:
+- julia -e 'Pkg.clone("TestRunner")'
+- julia -e 'Pkg.build("TestRunner")'
+- if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia -e 'Pkg.clone(pwd()); Pkg.build("GUITestRunner"); Pkg.test("GUITestRunner"; coverage=true)' 
