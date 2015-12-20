@@ -30,8 +30,13 @@ function create_main_window(tests_structure::Array{TestStructureNode})
   #set values for testing
   set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
 
+  run_tests_button = Button(frame, "Run tests!")
+  pack(run_tests_button)
+  bind(run_tests_button, "command", (x)->run_tests_callback(x, frame, ()->get_value(file_name_input), tests_structure))
+
   tests_list_frame = Labelframe(frame, "Tests")
   pack(tests_list_frame)
+  scrollbars_add(frame, tests_list_frame.w)
   frame
 end
 
@@ -60,19 +65,28 @@ function tests_header_callback(not_used, testNode::TestStructureNode, frame::Tk.
   display_all_tests(tests_structure, frame)
 end
 
+function run_tests_callback(not_used, frame::Tk.Tk_Frame, file_name_func::Function, tests_structure)
+  file_name = file_name_func()
+  tests_structure = TestRunner.run_all_tests(file_name)
+  frame_for_tests = get_frame_for_tests(frame)
+  reset_hidden_tests()
+  clear_old_test(frame_for_tests)
+  display_all_tests(tests_structure, frame_for_tests)
+end
+
 function reset_hidden_tests()
   empty!(hidden_tests_groups_names)
 end
 
 function CreateButtonForTest(testNode::Union{FactsCollectionNode, FactNode}, frame::Tk.Tk_Labelframe, tests_structure::Vector{TestStructureNode})
   if :result in fieldnames(testNode)
-    if testNode.result == true
-      img_name = "success.png"
-    elseif testNode.result == false
-      img_name = "failure.png"
-    else
-      img_name = "question.png"
+    img_name = "question.png"
+    try
+      test_result = get(testNode.result)
+      test_result == true ? img_name = "success.png"  : img_name = "failure.png"
+    catch
     end
+    println(img_name)
     img_path = Pkg.dir("GUITestRunner", "images", img_name)
     img = Image(img_path)
     node_button = Button(frame, text=testNode.name, image=img, compound="left")
