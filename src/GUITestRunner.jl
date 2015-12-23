@@ -31,35 +31,42 @@ function create_main_window(load_tests_button_callback::Function, run_tests_butt
   pack(frame, expand = true, fill = "both")
 
   file_name_input = Entry(frame)
-  pack(file_name_input)
   file_name_function = () -> get_value(file_name_input)
-  #grid(file_name_input, 1, 1)
+  file_name_input[:width] = 35
+  grid(file_name_input, 1, 1,sticky="w")
 
   #set values for testing
-  set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
+  #set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
 
   browse_dir_button = Button(frame, "...")
-  pack(browse_dir_button)
-  #grid(browse_dir_button, 1, 3)
+  browse_dir_button[:width] = 5
+  grid(browse_dir_button, 1, 2,sticky="w")
   bind(browse_dir_button, "command", _->browse_dir_callback(file_name_input))
 
-  load_tests_button = Button(frame, "Load tests!")
-  pack(load_tests_button)
+  load_tests_button = Button(frame, "Load tests")
+  load_tests_button[:width] = 42
+  grid(load_tests_button, 2:3, 1:2,sticky="w")
   bind(load_tests_button, "command") do _
     load_tests_button_callback(frame, file_name_function)
   end
 
-  run_tests_button = Button(frame, "Run tests!")
-  pack(run_tests_button)
+  run_tests_button = Button(frame, "Run tests")
+  run_tests_button[:width] = 42
+  grid(run_tests_button, 4, 1:2,sticky="w")
   bind(run_tests_button, "command") do _
     run_tests_button_callback(frame, file_name_function)
   end
 
   tests_list_frame = Labelframe(frame, "Tests")
-  pack(tests_list_frame)
+  tests_list_frame[:width] = 42
+  grid(tests_list_frame, 5,1:2,sticky="w")
 
   test_details_frame = Labelframe(frame, "Test result details")
-  pack(test_details_frame)
+  test_details_frame[:width] = 42
+  grid(test_details_frame, 6,1:2,sticky="s")
+
+  grid_rowconfigure(window, 1, weight=1)
+  grid_columnconfigure(window, 1, weight=1)
 
   frame
 end
@@ -71,7 +78,11 @@ end
 
 function process_tests_callback(frame::Tk_Frame, file_name_func::Function, processing_func::Function, display_tests::Function, clear_tests::Function)
   clear_tests(frame)
-  display_tests(frame, () -> processing_func(file_name_func))
+  try
+    display_tests(frame, () -> processing_func(file_name_func))
+  catch
+    Messagebox(frame, "Uncorrect file with tests")
+  end
 end
 
 function clear_current_tests(frame::Tk_Frame, hidden_tests_groups_names::Vector{AbstractString})
@@ -87,7 +98,7 @@ function tests_header_callback(frame::Tk_Frame, testNode::TestStructureNode, tes
     push!(hidden_tests_groups_names, testNode.name)
   end
   clear_all_tests(frame)
-  display_all_tests(frame, tests_structure, (_frame, node, testStructure)-> display_nodes(_frame, node, testStructure, hidden_tests_groups_names))# tu brakuje labela dla detailsów
+  display_all_tests(frame, tests_structure, (_frame, node, testStructure)-> display_nodes(_frame, node, testStructure, hidden_tests_groups_names))
 end
 
 function single_test_callback(frame::Tk_Frame, testNode::TestStructureNode)
@@ -97,8 +108,29 @@ function single_test_callback(frame::Tk_Frame, testNode::TestStructureNode)
 end
 
 function display_test_details(frame::Tk_Frame, test_details::AbstractString)
+  open_details_button = Button(get_frame_for_test_details(frame), "Show more")
+  open_details_button[:width] = 20
+  grid(open_details_button, 1, 1,sticky="e")
+  bind(open_details_button, "command", _->open_details_button_callback(test_details))
+
   label  = Label(get_frame_for_test_details(frame), test_details)
-  pack(label)
+  label[:width] = 41
+  grid(label, 2,1)
+end
+
+function open_details_button_callback(test_details::AbstractString)
+  open_new_window(test_details, 400, 350)
+end
+
+function open_new_window(text::AbstractString, width::Int, height::Int)
+  window = Toplevel("Test Details", width, height)
+  pack_stop_propagate(window)
+
+  frame = Frame(window, padding = [3,3,2,2])
+  pack(frame, expand = true, fill = "both")
+
+  label  = Label(frame, text)
+  grid(label, 1, 1)
 end
 
 function get_image(result::Symbol)
@@ -130,17 +162,18 @@ function draw_node(frame::Tk_Frame, testNode::TestStructureNode, tests_structure
   if isa(testNode, TestRunner.FactNode)
     test_result = get_result(testNode)
     img = get_image(test_result)
-    node_button = Button(frame_for_tests, text="yolo", image=img, compound="left")
+    node_button = Button(frame_for_tests, text=button_text, image=img, compound="left")
     bind(node_button, "command") do _
       single_test_callback(frame, testNode)
     end
   else
-    node_button = Button(frame_for_tests, text="yolo2", compound="left")
+    node_button = Button(frame_for_tests, text=button_text, compound="left")
     bind(node_button, "command") do _
       tests_header_callback(frame, testNode, tests_structure, hidden_tests_groups_names)
     end
   end
-  pack(node_button)
+  node_button[:width] = 37
+  formlayout(node_button, nothing)
 end
 
 function display_nodes(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, hidden_tests_groups_names::Vector{AbstractString})
