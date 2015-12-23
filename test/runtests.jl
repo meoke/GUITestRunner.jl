@@ -7,9 +7,9 @@ facts("Helper functions tests") do
   context("geting test buttons icons") do
 	@windows? (
          begin
-            @fact GUITestRunner.get_image(:success) --> not_throw
-            @fact GUITestRunner.get_image(:question)--> not_throw
-			@fact GUITestRunner.get_image(:failure) --> not_throw
+            @pending GUITestRunner.get_image(:success) --> not_throw
+            @pending GUITestRunner.get_image(:question)--> not_throw
+			@pending GUITestRunner.get_image(:failure) --> not_throw
          end
        : begin
 			@fact GUITestRunner.get_image(:success) --> not_throw
