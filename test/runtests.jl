@@ -5,6 +5,6 @@ not_throw(_) = true
 
 facts("Helper functions tests") do
   context("get_image") do
-    @pending GUITestRunner.get_image(:question) --> not_throw
+	@fact_throws ErrorException GUITestRunner.get_image(:pies) 
   end
 end
