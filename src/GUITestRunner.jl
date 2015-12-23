@@ -31,24 +31,21 @@ function create_main_window(load_tests_button_callback::Function, run_tests_butt
   pack(frame, expand = true, fill = "both")
 
   file_name_input = Entry(frame)
-  #pack(file_name_input)
   file_name_function = () -> get_value(file_name_input)
   file_name_input[:width] = 35
   grid(file_name_input, 1, 1,sticky="w")
 
   #set values for testing
-  set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
+  #set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
 
   browse_dir_button = Button(frame, "...")
   browse_dir_button[:width] = 5
-  #pack(browse_dir_button)
   grid(browse_dir_button, 1, 2,sticky="w")
   bind(browse_dir_button, "command", _->browse_dir_callback(file_name_input))
 
   load_tests_button = Button(frame, "Load tests")
   load_tests_button[:width] = 42
   grid(load_tests_button, 2:3, 1:2,sticky="w")
-  #pack(load_tests_button)
   bind(load_tests_button, "command") do _
     load_tests_button_callback(frame, file_name_function)
   end
@@ -56,7 +53,6 @@ function create_main_window(load_tests_button_callback::Function, run_tests_butt
   run_tests_button = Button(frame, "Run tests")
   run_tests_button[:width] = 42
   grid(run_tests_button, 4, 1:2,sticky="w")
-  #pack(run_tests_button)
   bind(run_tests_button, "command") do _
     run_tests_button_callback(frame, file_name_function)
   end
@@ -64,14 +60,10 @@ function create_main_window(load_tests_button_callback::Function, run_tests_butt
   tests_list_frame = Labelframe(frame, "Tests")
   tests_list_frame[:width] = 42
   grid(tests_list_frame, 5,1:2,sticky="w")
-  #formlayout(tests_list_frame)
 
   test_details_frame = Labelframe(frame, "Test result details")
   test_details_frame[:width] = 42
-  #scrollbars_add(frame, test_details_frame)
   grid(test_details_frame, 6,1:2,sticky="s")
-
-  #pack(test_details_frame)
 
   grid_rowconfigure(window, 1, weight=1)
   grid_columnconfigure(window, 1, weight=1)
@@ -106,7 +98,7 @@ function tests_header_callback(frame::Tk_Frame, testNode::TestStructureNode, tes
     push!(hidden_tests_groups_names, testNode.name)
   end
   clear_all_tests(frame)
-  display_all_tests(frame, tests_structure, (_frame, node, testStructure)-> display_nodes(_frame, node, testStructure, hidden_tests_groups_names))# tu brakuje labela dla detailsów
+  display_all_tests(frame, tests_structure, (_frame, node, testStructure)-> display_nodes(_frame, node, testStructure, hidden_tests_groups_names))
 end
 
 function single_test_callback(frame::Tk_Frame, testNode::TestStructureNode)
@@ -182,7 +174,6 @@ function draw_node(frame::Tk_Frame, testNode::TestStructureNode, tests_structure
   end
   node_button[:width] = 37
   formlayout(node_button, nothing)
-  #pack(node_button)
 end
 
 function display_nodes(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, hidden_tests_groups_names::Vector{AbstractString})
