@@ -1,5 +1,10 @@
 using GUITestRunner
-using Base.Test
+using FactCheck
 
-# write your own tests here
-@test 1 == 1
+not_throw(_) = true
+
+facts("Helper functions tests") do
+  context("get_image") do
+    @pending GUITestRunner.get_image(:question) --> not_throw
+  end
+end
