@@ -8,11 +8,11 @@ import Tk:Tk_Frame, Tk_Labelframe
 export start_test_runner
 
 function start_test_runner()
-  hidden_tests_groups_names = AbstractString[]
+  hidden_tests_groups_ids = Int[]
 
-  display_test = (frame, node, testStructure) -> display_nodes(frame, node, testStructure, hidden_tests_groups_names)
-  display_tests = (frame, tests_func) -> display_all_tests(frame, tests_func(), display_test)
-  clear_tests = (frame)->clear_current_tests(frame, hidden_tests_groups_names)
+  display_test = (frame, node, file_name_func, testStructure) -> display_nodes(frame, node, testStructure, file_name_func, hidden_tests_groups_ids)
+  display_tests = (frame, tests_func, file_name_func) -> display_all_tests(frame, tests_func(), file_name_func, display_test)
+  clear_tests = (frame)->clear_current_tests(frame, hidden_tests_groups_ids)
 
   tests_structure_func = (file_name_func) -> get_tests_structure(file_name_func())
   tests_results_func = (file_name_func) -> run_all_tests(file_name_func())
@@ -36,7 +36,7 @@ function create_main_window(load_tests_button_callback::Function, run_tests_butt
   pack(file_name_input, fill="both")
 
   #set values for testing
-  set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
+  #set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
 
   browse_dir_button = Button(frame, "Choose file")
   pack(browse_dir_button, fill="both")
@@ -71,26 +71,26 @@ end
 function process_tests_callback(frame::Tk_Frame, file_name_func::Function, processing_func::Function, display_tests::Function, clear_tests::Function)
   clear_tests(frame)
   try
-    display_tests(frame, () -> processing_func(file_name_func))
+    display_tests(frame, () -> processing_func(file_name_func), ()->file_name_func())
   catch
     Messagebox(frame, "Uncorrect file with tests")
   end
 end
 
-function clear_current_tests(frame::Tk_Frame, hidden_tests_groups_names::Vector{AbstractString})
-  empty!(hidden_tests_groups_names)
+function clear_current_tests(frame::Tk_Frame, hidden_tests_groups_ids::Vector{Int})
+  empty!(hidden_tests_groups_ids)
   clear_all_tests(frame)
   clear_all_test_details(frame)
 end
 
-function tests_header_callback(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, hidden_tests_groups_names::Vector{AbstractString})
-  if testNode.name in hidden_tests_groups_names
-    hidden_tests_groups_names = filter(x -> x != testNode.name, hidden_tests_groups_names)
+function tests_header_callback(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, file_name_func::Function, hidden_tests_groups_ids::Vector{Int})
+  if testNode.line in hidden_tests_groups_ids
+    hidden_tests_groups_ids = filter(x -> x != testNode.line, hidden_tests_groups_ids)
   else
-    push!(hidden_tests_groups_names, testNode.name)
+    push!(hidden_tests_groups_ids, testNode.line)
   end
   clear_all_tests(frame)
-  display_all_tests(frame, tests_structure, (_frame, node, testStructure)-> display_nodes(_frame, node, testStructure, hidden_tests_groups_names))
+  display_all_tests(frame, tests_structure, file_name_func, (_frame, node, testStructure)-> display_nodes(_frame, node, testStructure, file_name_func, hidden_tests_groups_ids::Vector{Int}))
 end
 
 function single_test_callback(frame::Tk_Frame, testNode::TestStructureNode)
@@ -103,7 +103,7 @@ function display_test_details(frame::Tk_Frame, test_details::AbstractString)
   if(test_details == "")
     return
   end
-  
+
   open_details_button = Button(get_frame_for_test_details(frame), "Open details in new window")
   pack(open_details_button)
   bind(open_details_button, "command", _->open_details_button_callback(test_details))
@@ -161,9 +161,9 @@ function get_result(testNode::FactNode)
   end
 end
 
-function draw_node(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, hidden_tests_groups_names::Vector{AbstractString})
+function draw_node(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, file_name_func::Function, hidden_tests_groups_ids::Vector{Int})
   frame_for_tests = get_frame_for_tests(frame)
-  button_text = testNode.name == "" ? "Tests group" : testNode.name
+  button_text = testNode.name == "" ? "Tests context" : testNode.name
   if isa(testNode, TestRunner.FactNode)
     test_result = get_result(testNode)
     img = get_image(test_result)
@@ -172,26 +172,41 @@ function draw_node(frame::Tk_Frame, testNode::TestStructureNode, tests_structure
     bind(node_label, "<Button-1>") do _
       single_test_callback(frame, testNode)
     end
+    line_number_button = Button(node_label,"line: $(testNode.line)")
+    pack(line_number_button, anchor="e")
+    bind(line_number_button, "<Button-1>") do _
+      line_number_button_callback(testNode, file_name_func())
+    end
   else
     node_label = Label(frame_for_tests, button_text)
     node_label[:background]="#C0C0C0"
     bind(node_label, "<Button-1>") do _
-      tests_header_callback(frame, testNode, tests_structure, hidden_tests_groups_names)
+      tests_header_callback(frame, testNode, tests_structure, file_name_func, hidden_tests_groups_ids)
     end
   end
   pack(node_label, fill="both")
 end
 
-function display_nodes(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, hidden_tests_groups_names::Vector{AbstractString})
-  draw_node(frame, testNode, tests_structure, hidden_tests_groups_names)
-  if !(testNode.name in hidden_tests_groups_names)
-    map(child -> display_nodes(frame, child, tests_structure, hidden_tests_groups_names), TestRunner.children(testNode))
+function line_number_button_callback(testNode::TestStructureNode, tests_file_name::AbstractString)
+  open_file_command = get_command(testNode.line, tests_file_name)
+  run(open_file_command)
+end
+
+function get_command(test_node_line::Int, tests_file_name::AbstractString)
+  settings = readdlm("/home/student/.julia/v0.4/GUITestRunner/src/app.config")
+  `$(settings[1]) $(settings[2]) $test_node_line $tests_file_name`
+end
+
+function display_nodes(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, file_name_func::Function, hidden_tests_groups_ids::Vector{Int})
+  draw_node(frame, testNode, tests_structure, file_name_func, hidden_tests_groups_ids)
+  if !(testNode.line in hidden_tests_groups_ids)
+    map(child -> display_nodes(frame, child, tests_structure, file_name_func, hidden_tests_groups_ids), TestRunner.children(testNode))
   end
 end
 
-function display_all_tests(frame::Tk_Frame, testStructure::Vector{TestStructureNode}, display_test::Function)
+function display_all_tests(frame::Tk_Frame, testStructure::Vector{TestStructureNode}, file_name_func::Function, display_test::Function)
   for node in testStructure
-    display_test(frame, node, testStructure)
+    display_test(frame, node, file_name_func, testStructure)
   end
 end
 
@@ -199,7 +214,7 @@ get_frame_for_tests(frame::Tk_Frame) = filter(x->isa(x, Tk.Tk_Labelframe), frame
 
 get_frame_for_test_details(frame::Tk_Frame) = filter(x->isa(x, Tk.Tk_Labelframe), frame.children)[2]
 
-function clear_all_children(frame::Union{Tk_Frame, Tk_Labelframe})
+function clear_all_children(frame::Union{Tk_Frame, Tk_Labelframe, Tk.Tk_Text})
   map(child->forget(child), frame.children)
   empty!(frame.children)
 end
