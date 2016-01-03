@@ -100,12 +100,26 @@ function single_test_callback(frame::Tk_Frame, testNode::TestStructureNode)
 end
 
 function display_test_details(frame::Tk_Frame, test_details::AbstractString)
+  if(test_details == "")
+    return
+  end
+  
   open_details_button = Button(get_frame_for_test_details(frame), "Open details in new window")
   pack(open_details_button)
   bind(open_details_button, "command", _->open_details_button_callback(test_details))
 
-  label  = Label(get_frame_for_test_details(frame), test_details)
-  pack(label)
+  details_box = get_details_box(frame, test_details)
+  pack(details_box)
+end
+
+function get_details_box(frame::Tk_Frame, test_details::AbstractString)
+  frame_for_details = Frame(get_frame_for_test_details(frame))
+  details_box = Text(frame_for_details)
+  scrollbars_add(frame_for_details, details_box)
+  pack(frame_for_details, expand=true, fill = "both")
+  set_value(details_box, test_details)
+  details_box[:state] = "disabled"
+  details_box
 end
 
 function open_details_button_callback(test_details::AbstractString)
