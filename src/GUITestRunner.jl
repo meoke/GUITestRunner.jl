@@ -2,7 +2,7 @@ module GUITestRunner
 using Tk
 using TestRunner
 
-import TestRunner: TestStructureNode, FactsCollectionNode, FactNode
+import TestRunner: TestStructureNode, FactsCollectionNode, FactNode, children
 import Tk:Tk_Frame, Tk_Labelframe
 
 export start_test_runner
@@ -12,12 +12,12 @@ source_path =  @__FILE__() |> dirname
 function start_test_runner()
   hidden_tests_groups_ids = Int[]
 
-  display_test(frame, node, file_name_func, testStructure) = display_nodes(frame, node, testStructure, file_name_func, hidden_tests_groups_ids)
+  display_test(frame, node, file_name_func, testStructure, nesting_level) = display_nodes(frame, node, testStructure, file_name_func, hidden_tests_groups_ids, nesting_level)
   display_tests(frame, tests_func, file_name_func) = display_all_tests(frame, tests_func(), file_name_func, display_test)
   clear_tests(frame) = clear_current_tests(frame, hidden_tests_groups_ids)
 
-  tests_structure_func(file_name_func) = get_tests_structure(file_name_func())
-  tests_results_func(file_name_func) = run_all_tests(file_name_func())
+  tests_structure_func(file_name_func) = get_tests_structure(file_name_func()) |> children
+  tests_results_func(file_name_func) = run_all_tests(file_name_func()) |> children
 
   load_tests_button_callback(frame, file_name_function) = process_tests_callback(frame, file_name_function, tests_structure_func, display_tests, clear_tests)
   run_tests_button_callback(frame, file_name_function) = process_tests_callback(frame, file_name_function, tests_results_func, display_tests, clear_tests)
@@ -72,11 +72,11 @@ end
 
 function process_tests_callback(frame::Tk_Frame, file_name_func::Function, processing_func::Function, display_tests::Function, clear_tests::Function)
   clear_tests(frame)
-  try
+  #try
     display_tests(frame, () -> processing_func(file_name_func), ()->file_name_func())
-  catch
-    Messagebox(frame, "Uncorrect file with tests")
-  end
+  #catch
+  #  Messagebox(frame, "Uncorrect file with tests")
+  #end
 end
 
 function clear_current_tests(frame::Tk_Frame, hidden_tests_groups_ids::Vector{Int})
@@ -92,12 +92,12 @@ function tests_header_callback(frame::Tk_Frame, testNode::TestStructureNode, tes
     push!(hidden_tests_groups_ids, testNode.line)
   end
   clear_all_tests(frame)
-  display_all_tests(frame, tests_structure, file_name_func, (_frame, node, file_name_func, testStructure)-> display_nodes(_frame, node, testStructure, file_name_func, hidden_tests_groups_ids::Vector{Int}))
+  display_all_tests(frame, tests_structure, file_name_func, (_frame, node, file_name_func, testStructure, nesting_level)-> display_nodes(_frame, node, testStructure, file_name_func, hidden_tests_groups_ids::Vector{Int}, nesting_level))
 end
 
 function single_test_callback(frame::Tk_Frame, testNode::TestStructureNode)
   clear_all_test_details(frame)
-  test_details = get(testNode.details, "")
+  test_details = details(testNode)
   display_test_details(frame, test_details)
 end
 
@@ -140,13 +140,18 @@ function open_new_window(text::AbstractString, width::Int, height::Int)
   pack(label)
 end
 
-function get_image(result::Symbol)
-  if result == :question
-    img_name = "question.png"
-  elseif result == :failure
-    img_name = "failure.png"
-  elseif result == :success
+
+function get_image(result::RESULT)
+  if result == test_success
     img_name = "success.png"
+  elseif result == test_failure
+    img_name = "failure.png"
+  elseif result == test_error
+    img_name = "error.png"
+  elseif result == test_pending
+    img_name = "pending.png"
+  elseif result == test_not_run
+    img_name = "not_run.png"
   else
     error("Image not specified for this type of $result.")
   end
@@ -155,20 +160,11 @@ function get_image(result::Symbol)
   Image(img_path)
 end
 
-function get_result(testNode::FactNode)
-  if isnull(result(testNode))
-   :question
-  else
-    get(result(testNode)) ? :success : :failure
-  end
-end
-
-function draw_node(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, file_name_func::Function, hidden_tests_groups_ids::Vector{Int})
+function draw_node(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, file_name_func::Function, hidden_tests_groups_ids::Vector{Int}, nesting_level::Int)
   frame_for_tests = get_frame_for_tests(frame)
-  button_text = testNode.name == "" ? "Tests context" : testNode.name
+  button_text = name(testNode)
   if isa(testNode, TestRunner.FactNode)
-    test_result = get_result(testNode)
-    img = get_image(test_result)
+    img = testNode |> result |> get_image
     node_label = Label(frame_for_tests, button_text, img)
     node_label[:background]="white smoke"
     bind(node_label, "<Button-1>") do _
@@ -180,28 +176,32 @@ function draw_node(frame::Tk_Frame, testNode::TestStructureNode, tests_structure
       line_number_button_callback(testNode, file_name_func())
     end
   else
+    nesting_level+=1
     node_label = Label(frame_for_tests, button_text)
     node_label[:background]="#C0C0C0"
     bind(node_label, "<Button-1>") do _
       tests_header_callback(frame, testNode, tests_structure, file_name_func, hidden_tests_groups_ids)
     end
   end
-  pack(node_label, fill="both")
+  padding = (nesting_level-1)*15
+  pack(node_label, fill="x",padx="$padding 0")
+  nesting_level
 end
 
 line_number_button_callback(testNode::TestStructureNode, tests_file_name::AbstractString) =
   @async run(`$source_path/lineNumberOnClick.sh $(testNode.line) $tests_file_name`)
 
-function display_nodes(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, file_name_func::Function, hidden_tests_groups_ids::Vector{Int})
-  draw_node(frame, testNode, tests_structure, file_name_func, hidden_tests_groups_ids)
+function display_nodes(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, file_name_func::Function, hidden_tests_groups_ids::Vector{Int}, nesting_level::Int)
+  nesting_level = draw_node(frame, testNode, tests_structure, file_name_func, hidden_tests_groups_ids, nesting_level)
   if !(testNode.line in hidden_tests_groups_ids)
-    map(child -> display_nodes(frame, child, tests_structure, file_name_func, hidden_tests_groups_ids), TestRunner.children(testNode))
+    map(child -> display_nodes(frame, child, tests_structure, file_name_func, hidden_tests_groups_ids, nesting_level), TestRunner.children(testNode))
   end
 end
 
 function display_all_tests(frame::Tk_Frame, testStructure::Vector{TestStructureNode}, file_name_func::Function, display_test::Function)
+  nesting_level = 0
   for node in testStructure
-    display_test(frame, node, file_name_func, testStructure)
+    display_test(frame, node, file_name_func, testStructure, nesting_level)
   end
 end
 
