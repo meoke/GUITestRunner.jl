@@ -7,18 +7,20 @@ import Tk:Tk_Frame, Tk_Labelframe
 
 export start_test_runner
 
+source_path =  @__FILE__() |> dirname
+
 function start_test_runner()
   hidden_tests_groups_ids = Int[]
 
-  display_test = (frame, node, file_name_func, testStructure) -> display_nodes(frame, node, testStructure, file_name_func, hidden_tests_groups_ids)
-  display_tests = (frame, tests_func, file_name_func) -> display_all_tests(frame, tests_func(), file_name_func, display_test)
-  clear_tests = (frame)->clear_current_tests(frame, hidden_tests_groups_ids)
+  display_test(frame, node, file_name_func, testStructure) = display_nodes(frame, node, testStructure, file_name_func, hidden_tests_groups_ids)
+  display_tests(frame, tests_func, file_name_func) = display_all_tests(frame, tests_func(), file_name_func, display_test)
+  clear_tests(frame) = clear_current_tests(frame, hidden_tests_groups_ids)
 
-  tests_structure_func = (file_name_func) -> get_tests_structure(file_name_func())
-  tests_results_func = (file_name_func) -> run_all_tests(file_name_func())
+  tests_structure_func(file_name_func) = get_tests_structure(file_name_func())
+  tests_results_func(file_name_func) = run_all_tests(file_name_func())
 
-  load_tests_button_callback = (frame, file_name_function)-> process_tests_callback(frame, file_name_function, tests_structure_func, display_tests, clear_tests)
-  run_tests_button_callback = (frame, file_name_function) -> process_tests_callback(frame, file_name_function, tests_results_func, display_tests, clear_tests)
+  load_tests_button_callback(frame, file_name_function) = process_tests_callback(frame, file_name_function, tests_structure_func, display_tests, clear_tests)
+  run_tests_button_callback(frame, file_name_function) = process_tests_callback(frame, file_name_function, tests_results_func, display_tests, clear_tests)
 
   create_main_window(load_tests_button_callback, run_tests_button_callback)
 end
@@ -36,7 +38,7 @@ function create_main_window(load_tests_button_callback::Function, run_tests_butt
   pack(file_name_input, fill="both")
 
   #set values for testing
-  #set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
+  set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
 
   browse_dir_button = Button(frame, "Choose file")
   pack(browse_dir_button, fill="both")
@@ -90,7 +92,7 @@ function tests_header_callback(frame::Tk_Frame, testNode::TestStructureNode, tes
     push!(hidden_tests_groups_ids, testNode.line)
   end
   clear_all_tests(frame)
-  display_all_tests(frame, tests_structure, file_name_func, (_frame, node, testStructure)-> display_nodes(_frame, node, testStructure, file_name_func, hidden_tests_groups_ids::Vector{Int}))
+  display_all_tests(frame, tests_structure, file_name_func, (_frame, node, file_name_func, testStructure)-> display_nodes(_frame, node, testStructure, file_name_func, hidden_tests_groups_ids::Vector{Int}))
 end
 
 function single_test_callback(frame::Tk_Frame, testNode::TestStructureNode)
@@ -187,15 +189,8 @@ function draw_node(frame::Tk_Frame, testNode::TestStructureNode, tests_structure
   pack(node_label, fill="both")
 end
 
-function line_number_button_callback(testNode::TestStructureNode, tests_file_name::AbstractString)
-  open_file_command = get_command(testNode.line, tests_file_name)
-  run(open_file_command)
-end
-
-function get_command(test_node_line::Int, tests_file_name::AbstractString)
-  settings = readdlm("/home/student/.julia/v0.4/GUITestRunner/src/app.config")
-  `$(settings[1]) $(settings[2]) $test_node_line $tests_file_name`
-end
+line_number_button_callback(testNode::TestStructureNode, tests_file_name::AbstractString) =
+  @async run(`$source_path/lineNumberOnClick.sh $(testNode.line) $tests_file_name`)
 
 function display_nodes(frame::Tk_Frame, testNode::TestStructureNode, tests_structure::Vector{TestStructureNode}, file_name_func::Function, hidden_tests_groups_ids::Vector{Int})
   draw_node(frame, testNode, tests_structure, file_name_func, hidden_tests_groups_ids)
