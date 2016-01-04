@@ -28,7 +28,7 @@ facts("GUI") do
     destroy(window)
   end
   context("New window") do
-    window = GUITestRunner.open_new_window("Test window", 100,200)
+    window = GUITestRunner.create_new_window("Test window", 100,200)
     @fact window[:width] --> "100" "Window width"
     @fact window[:height] --> "200" "Window height"
     @fact Tk.get_value((window.children[1].children[1])) --> "Test window" "Window name"
