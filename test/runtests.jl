@@ -37,9 +37,9 @@ facts("GUI") do
   context("Test details window") do
     window = start_test_runner()
     frame = window.children[1]
-    GUITestRunner.display_test_details(frame, "Test Details")
+    GUITestRunner.display_test_details!(frame, "Test Details")
     @fact Tk.get_value(GUITestRunner.get_frame_for_test_details(frame).children[2].children[1]) --> "Test Details" "Correct text displayed"
-    GUITestRunner.clear_current_tests(frame, Vector{Int}())
+    GUITestRunner.clear_current_tests!(frame)
     @fact GUITestRunner.get_frame_for_test_details(frame).children |> length --> 0 "Test details cleared"
     destroy(window)
   end
@@ -54,7 +54,7 @@ facts("Children operations") do
   test3 = Label(frame_for_tests)
   map(t -> pack(t), (test1, test2, test3))
   @fact frame_for_tests.children |> length --> 3 "Tests labels count"
-  GUITestRunner.clear_current_tests(frame, Vector{Int}())
+  GUITestRunner.clear_current_tests!(frame)
   @fact frame_for_tests.children |> length --> 0 "Tests removed"
   destroy(window)
 end
