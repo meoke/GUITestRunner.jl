@@ -13,3 +13,11 @@ MIT Licensed - see LICENSE.md
 Just call
 `julia> GUITestRunner.start_test_runner()`
 
+### Configuration
+GUITestRunner enables opening the file with tests in the predifined text editor. The editor can open on the line with the fact. To configure it edit script src/lineNumberButtonOnClick.sh. This script is executed when a button with line number is clicked on, with following parameters:
+- line number,
+- file name.
+
+An example script for opening the file in Kate:
+
+  `kate -l $1 $2`
