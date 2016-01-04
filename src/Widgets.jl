@@ -20,11 +20,11 @@ function create_main_window()
   pack(file_name_input, fill="both")
 
   #set values for testing
-  set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
+  #set_value(file_name_input, "/home/student/.julia/v0.4/GUITestRunner/test/sampleTests.jl")
 
   browse_dir_button = Button(frame, "Choose file")
   pack(browse_dir_button, fill="both")
-  bind(browse_dir_button, "command", _->browse_dir_callback(file_name_input))
+  bind(browse_dir_button, "command", _->browse_dir_callback!(file_name_input))
 
   load_tests_button = Button(frame, "Load tests")
   pack(load_tests_button, fill="both")
