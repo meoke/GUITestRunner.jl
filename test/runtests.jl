@@ -13,8 +13,10 @@ facts("Helper functions tests") do
   context("Colors for collections and context") do
     factCollectionNode = TestRunner.FactsCollectionNode(0,"Collection", Vector{TestRunner.TestStructureNode}())
     contextNode = TestRunner.ContextNode(0,"Context", Vector{TestRunner.TestStructureNode}())
-    @fact GUITestRunner.get_color_for_tests_header(factCollectionNode) --> "#C0C0C0" "Correct color for collection"
-    @fact GUITestRunner.get_color_for_tests_header(contextNode) --> "#FFCC99" "Correct color for contect"
+    factNode = TestRunner.FactNode(0,"Node")
+    @fact GUITestRunner.get_color(factCollectionNode) --> "#C0C0C0" "Correct color for collection"
+    @fact GUITestRunner.get_color(contextNode) --> "#FFCC99" "Correct color for contect"
+    @fact GUITestRunner.get_color(factNode) --> "white smoke"
   end
 end
 
@@ -24,7 +26,7 @@ facts("GUI") do
     @fact exists(window) --> true "Window exists"
     @fact window.children[1].children |> length --> 6 "Frame children count"
     @fact window[:width] --> "350" "Window width"
-    @fact window[:height] --> "750" "Window height"
+    @fact window[:height] --> "600" "Window height"
     destroy(window)
   end
   context("New window") do

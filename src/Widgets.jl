@@ -4,8 +4,10 @@ using TestRunner
 import TestRunner: TestStructureNode, FactsCollectionNode, FactNode, children, ContextNode
 import Tk:Tk_Frame, Tk_Labelframe, Tk_Label
 
+test_result_images = Dict(test_success => "success.png", test_failure => "failure.png", test_error => "error.png", test_pending => "pending.png", test_not_run => "not_run.png")
+
 function create_main_window()
-  window = Toplevel("Julia Test Runner", 350, 750)
+  window = Toplevel("Julia Test Runner", 350, 600)
   pack_stop_propagate(window)
   bind(window, "<Control-r>", _ -> run_tests_button_callback!(frame))
   bind(window, "<Control-l>", _ -> load_tests_button_callback!(frame))
@@ -76,7 +78,7 @@ function get_node_label!(frame::Tk_Frame,tests_structure::Vector{TestStructureNo
   button_text = name(test_node)
   img = test_node |> result |> get_image
   node_label = Label(frame_for_tests, button_text, img)
-  node_label[:background]="white smoke"
+  node_label[:background]=get_color(test_node)
   bind(node_label, "<Button-1>", _ -> single_test_callback!(frame, test_node))
 
   create_line_number_button!(node_label, test_node)
@@ -93,7 +95,7 @@ function get_node_label!(frame::Tk_Frame,tests_structure::Vector{TestStructureNo
   frame_for_tests = get_frame_for_tests(frame)
   button_text = name(test_node)
   node_label = Label(frame_for_tests, button_text)
-  node_label[:background]=get_color_for_tests_header(test_node)
+  node_label[:background]=get_color(test_node)
   bind(node_label, "<Button-1>", _ -> tests_header_callback!(frame, test_node, tests_structure))
 
   nesting_level+=1
@@ -101,24 +103,13 @@ function get_node_label!(frame::Tk_Frame,tests_structure::Vector{TestStructureNo
 end
 
 function get_image(result::RESULT)
-  if result == test_success
-    img_name = "success.png"
-  elseif result == test_failure
-    img_name = "failure.png"
-  elseif result == test_error
-    img_name = "error.png"
-  elseif result == test_pending
-    img_name = "pending.png"
-  elseif result == test_not_run
-    img_name = "not_run.png"
-  else
-    error("Image not specified for this type of $result.")
-  end
-
+  img_name = get(test_result_images, result, "not_run.png")
   img_path = Pkg.dir("GUITestRunner", "images", img_name)
   Image(img_path)
 end
 
-get_color_for_tests_header(header::FactsCollectionNode) = "#C0C0C0"
+get_color(element::FactsCollectionNode) = "#C0C0C0"
 
-get_color_for_tests_header(header::ContextNode) = "#FFCC99"
+get_color(element::ContextNode) = "#FFCC99"
+
+get_color(element::FactNode) = "white smoke"
