@@ -60,3 +60,13 @@ facts("Children operations") do
   @fact frame_for_tests.children |> length --> 0 "Tests removed"
   destroy(window)
 end
+
+facts("Happy path") do
+  window = start_test_runner()
+  frame = window.children[1]
+  file_name_input = frame.children[1]
+  set_value(file_name_input, "./sampleTests.jl")
+  @fact GUITestRunner.load_tests_button_callback!(frame) --> not_throw "Loading tests does not throw"
+  @fact GUITestRunner.run_tests_button_callback!(frame) --> not_throw "Running tests does not throw"
+  destroy(window)
+end
