@@ -73,9 +73,9 @@ function create_details_textbox!(frame::Tk_Frame, test_details::AbstractString)
   pack(details_box)
 end
 
-function get_node_label!(frame::Tk_Frame,tests_structure::Vector{TestStructureNode}, test_node::FactNode,nesting_level::Int)
+function get_node_label!(frame::Tk_Frame, tests_structure::Vector{TestStructureNode}, test_node::FactNode,nesting_level::Int)
   frame_for_tests = get_frame_for_tests(frame)
-  button_text = name(test_node)
+  button_text = name(test_node) != "" ? name(test_node) : "Unnamed test"
   img = test_node |> result |> get_image
   node_label = Label(frame_for_tests, button_text, img)
   node_label[:background]=get_color(test_node)
@@ -91,9 +91,9 @@ function create_line_number_button!(node_label::Tk_Label, test_node::FactNode)
   bind(line_number_button, "<Button-1>", _ -> line_number_button_callback(test_node, get_file_name()))
 end
 
-function get_node_label!(frame::Tk_Frame,tests_structure::Vector{TestStructureNode},test_node::TestStructureNode, nesting_level::Int)
+function get_node_label!(frame::Tk_Frame, tests_structure::Vector{TestStructureNode},test_node::TestStructureNode, nesting_level::Int)
   frame_for_tests = get_frame_for_tests(frame)
-  button_text = name(test_node)
+  button_text = name(test_node) != "" ? name(test_node) : "Unnamed group of tests"
   node_label = Label(frame_for_tests, button_text)
   node_label[:background]=get_color(test_node)
   bind(node_label, "<Button-1>", _ -> tests_header_callback!(frame, test_node, tests_structure))
