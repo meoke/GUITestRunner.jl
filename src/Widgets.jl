@@ -75,7 +75,7 @@ end
 
 function get_node_label!(frame::Tk_Frame, tests_structure::Vector{TestStructureNode}, test_node::FactNode,nesting_level::Int)
   frame_for_tests = get_frame_for_tests(frame)
-  button_text = name(test_node) != "" ? name(test_node) : "Test"
+  button_text = name(test_node) != "" ? name(test_node) : "Unnamed test"
   img = test_node |> result |> get_image
   node_label = Label(frame_for_tests, button_text, img)
   node_label[:background]=get_color(test_node)
@@ -93,7 +93,7 @@ end
 
 function get_node_label!(frame::Tk_Frame, tests_structure::Vector{TestStructureNode},test_node::TestStructureNode, nesting_level::Int)
   frame_for_tests = get_frame_for_tests(frame)
-  button_text = name(test_node) != "" ? name(test_node) : "Group of tests"
+  button_text = name(test_node) != "" ? name(test_node) : "Unnamed group of tests"
   node_label = Label(frame_for_tests, button_text)
   node_label[:background]=get_color(test_node)
   bind(node_label, "<Button-1>", _ -> tests_header_callback!(frame, test_node, tests_structure))
