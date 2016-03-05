@@ -6,7 +6,8 @@ os:
   - osx
 julia:
   - release
-  - nightly
+#  Tk.jl does not work under Julia 0.5 yet
+#  - nightly
 notifications:
   email: 
   - paulinahyzy@gmail.com

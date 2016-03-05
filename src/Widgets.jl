@@ -4,7 +4,7 @@ using TestRunner
 import TestRunner: TestStructureNode, FactsCollectionNode, FactNode, children, ContextNode
 import Tk:Tk_Frame, Tk_Labelframe, Tk_Label
 
-test_result_images = Dict(test_success => "success.png", test_failure => "failure.png", test_error => "error.png", test_pending => "pending.png", test_not_run => "not_run.png")
+test_result_images = Dict(test_success => "success.gif", test_failure => "failure.gif", test_error => "error.gif", test_pending => "pending.gif", test_not_run => "not_run.gif")
 
 function create_main_window()
   window = Toplevel("Julia Test Runner", 350, 600)
@@ -102,9 +102,12 @@ function get_node_label!(frame::Tk_Frame,tests_structure::Vector{TestStructureNo
   nesting_level, node_label
 end
 
+fix_windows_path(path) = replace(path, "\\", "\\\\")
+
 function get_image(result::RESULT)
   img_name = get(test_result_images, result, "not_run.png")
   img_path = Pkg.dir("GUITestRunner", "images", img_name)
+  @windows_only img_path = fix_windows_path(img_path)
   Image(img_path)
 end
 
