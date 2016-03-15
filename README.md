@@ -19,12 +19,12 @@ MIT Licensed - see LICENSE.md
 
 	`julia> GUITestRunner.start_test_runner()`
 
-	![GUITestRunner_noTests]('readmeImages/noTests.png')
+	![GUITestRunner_noTests](readmeImages/noTests.png)
 
 
 2. Click on *Choose file* button to choose your file with FactCheck.jl tests you work with.
 
-	![GUITestRunner_chooseFile]('readmeImages/chooseFile.png')
+	![GUITestRunner_chooseFile]("readmeImages/chooseFile.png")
 
 3. Click on *Load tests* button to load your tests to the window. They are displayed according to the structure of nested facts groups and contexts.
 
