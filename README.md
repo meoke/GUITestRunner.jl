@@ -24,21 +24,21 @@ MIT Licensed - see LICENSE.md
 
 2. Click on *Choose file* button to choose your file with FactCheck.jl tests you work with.
 
-	![GUITestRunner_chooseFile]("readmeImages/chooseFile.png")
+	![GUITestRunner_chooseFile](readmeImages/chooseFile.png)
 
 3. Click on *Load tests* button to load your tests to the window. They are displayed according to the structure of nested facts groups and contexts.
 
-	![GUITestRunner_loadTests]('readmeImages/loadTests.png')
+	![GUITestRunner_loadTests](readmeImages/loadTests.png)
 
 4. Click on *Run tests* button to run your tests using FactCheck.jl. The results are marked with appropriate icons.
 
-	![GUITestRunner_runTests]('readmeImages/runTests.png')
+	![GUITestRunner_runTests](readmeImages/runTests.png)
 
 ### Additional functions
 
 + You can **view details** of the specified test just by clicking on it. You can read them at the bottom of the main window or in a separate window (in order to do it click on the *Open details in new window* button).
 
-	![GUITestRunner_details]('readmeImages/details.png')
+	![GUITestRunner_details](readmeImages/details.png)
 
 + You can also **open file with the tests on specific line** by clicking on the button next to the test name.
 
