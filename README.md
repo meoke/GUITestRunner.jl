@@ -8,19 +8,17 @@
 MIT Licensed - see LICENSE.md
 
 ### Installation
-
-	`julia> Pkg.clone("https://github.com/meoke/GUITestRunner.jl.git")`
-
+```julia
+julia> Pkg.clone("https://github.com/meoke/GUITestRunner.jl.git")
+```
 ### Usage
 
 1. To open the test runner window call:
-
-	`julia> using GUITestRunner `
-
-	`julia> GUITestRunner.start_test_runner()`
-
+	```julia
+	julia> using GUITestRunner
+	julia> GUITestRunner.start_test_runner()
+	```
 	![GUITestRunner_noTests](readmeImages/noTests.png)
-
 
 2. Click on *Choose file* button to choose your file with FactCheck.jl tests you work with.
 
@@ -50,9 +48,14 @@ GUITestRunner can open your file with tests in a predifined text editor on the l
 2. file name.
 
 An example script for opening the file in Kate (Linux):
-
-	`kate -l $1 $2`
-
+	
+```shell
+kate -l $1 $2
+```
+	
 An example script for opening the file in Atom (Windows):
 
-	`atom %2:%1`
+```bat
+atom %2:%1
+```
+	
