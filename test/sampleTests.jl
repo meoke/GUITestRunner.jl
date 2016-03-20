@@ -1,31 +1,27 @@
 using FactCheck
 
-facts("First facts group") do
-  @fact 1 --> 1 "Success"
-  @fact 1 --> 2 "Failure"
-  @fact 2 --> 2 #Nameless fact
-  @fact error("test") --> 1 "Error"
-  @pending 1-->isempty([]) "Pending"
-  context("My context") do
-    @fact 1 --> 1 "My context Test 1 - success"
-    @fact 1 --> 2 "My context Test 2 - failure"
+facts("Math module tests") do
+  @fact 1 --> 1 "Primary numbers less than 100 search"
+  @pending 1-->isempty([]) ""
+  context("Trigonometric functions") do
+    @fact 1 --> 1 "Sine"
+    @fact 1 --> 2 "Cosine"
+	@fact 1 --> 1 "Tangent"
   end
-  @fact 2 --> 2 "Success"
+  @fact 2 --> 2 "Units of measurment"
 end
 
-facts("Second facts group") do
-  @fact error("test2") --> 1 "Error"
-  @fact 1--> 2 "Failure"
-  facts("Nesting level 1") do
-    @fact 1--> 1 "Success"
-    @fact 1--> 2 "Failure"
-    facts("Nesting level 2") do
-      @fact 1--> 1 "Failure"
-      @pending 1--> 2 "Pending"
+facts("Words processing tests") do
+  @fact error("test2") --> 1 "Make palindrome"
+  @fact 1--> 2 "Make anagrame"
+  context("Translate") do
+	facts("From English") do
+		@fact 1--> 1 "From English to Spanish"
+		@fact 1--> 2 "From English to German"
+	end
+    facts("To English") do
+      @fact 1--> 1 "From Spanish to English"
+      @pending 1--> 2 "From German to English"
     end
-  end
-  context("My 2nd context") do
-    @fact 1 --> 1 "My 2nd context Test 1 - success"
-    @fact 1 --> 2 "My 2nd context Test 2 - failure"
   end
 end

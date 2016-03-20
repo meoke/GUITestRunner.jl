@@ -59,8 +59,10 @@ function single_test_callback!(frame::Tk_Frame, test_node::TestStructureNode)
   display_test_details!(frame, test_details)
 end
 
-line_number_button_callback(test_node::TestStructureNode, tests_file_name::AbstractString) =
-  @async run(`$source_path/lineNumberButtonOnClick.sh $(test_node.line) $tests_file_name`)
+function line_number_button_callback(test_node::TestStructureNode, tests_file_name::AbstractString)
+  script_name = @windows ? "/lineNumberButtonOnClick.bat" : "\lineNumberButtonOnClick.sh"
+  @async run(`$source_path$script_name $(test_node.line) $tests_file_name`)
+end
 
 open_details_button_callback(test_details::AbstractString) =  create_new_window(test_details, 400, 350)
 
