@@ -5,7 +5,7 @@ os:
   - linux
   - osx
 julia:
-  - release
+  - 0.4
 #  Tk.jl does not work under Julia 0.5 yet
 #  - nightly
 notifications:
